@@ -123,6 +123,7 @@ const rawPainters = [
   {
     id: 'petr-havel',
     name: 'Petr Havel',
+    experience: '12 let praxe',
     role: 'Po nájemníkovi a menší byty',
     summary:
       'Nejčastěji maluju byty před nastěhováním a rychlé přemalby, kde je důležitá jasná domluva a čistá práce bez zbytečných okolků.',
@@ -142,6 +143,7 @@ const rawPainters = [
   {
     id: 'martin-ruzicka',
     name: 'Martin Růžička',
+    experience: '14 let praxe',
     role: 'Novostavby a větší byty',
     summary:
       'Sedí mi čisté zakázky, které se dají dobře naplánovat dopředu. Mám rád přesný rozsah práce a klidnou organizaci.',
@@ -161,6 +163,7 @@ const rawPainters = [
   {
     id: 'roman-vesely',
     name: 'Roman Veselý',
+    experience: '11 let praxe',
     role: 'Přemalby a opravy',
     summary:
       'Dělám běžné přemalby i stěny, které potřebují před malbou srovnat a připravit. Hodí se tam, kde je potřeba opravit drobnosti.',
@@ -180,6 +183,7 @@ const rawPainters = [
   {
     id: 'david-svoboda',
     name: 'David Svoboda',
+    experience: '8 let praxe',
     role: 'Rychlé termíny',
     summary:
       'Když je potřeba rychle malovat menší byt nebo kancelář, umím se přizpůsobit tempu a fungovat i v kratším okně.',
@@ -199,6 +203,7 @@ const rawPainters = [
   {
     id: 'jakub-cerny',
     name: 'Jakub Černý',
+    experience: '10 let praxe',
     role: 'Přesné zakrytí a detail',
     summary:
       'Víc než rychlost řeším pečlivost. Hodím se tam, kde je důležité šetrné zakrytí a čistý detail kolem nábytku nebo kuchyně.',
@@ -218,6 +223,7 @@ const rawPainters = [
   {
     id: 'tomas-pospisil',
     name: 'Tomáš Pospíšil',
+    experience: '13 let praxe',
     role: 'Rodinné byty',
     summary:
       'Nejčastěji dělám běžné rodinné byty, kde je potřeba zvládnout víc pokojů najednou a jasně držet harmonogram.',
@@ -237,6 +243,7 @@ const rawPainters = [
   {
     id: 'ondrej-kral',
     name: 'Ondřej Král',
+    experience: '9 let praxe',
     role: 'Bílá výmalba bez komplikací',
     summary:
       'Hodím se na čisté bílé malby a standardní přemalby, kde klient nechce nic komplikovat a potřebuje rychle hotovo.',
@@ -256,6 +263,7 @@ const rawPainters = [
   {
     id: 'marek-novotny',
     name: 'Marek Novotný',
+    experience: '10 let praxe',
     role: 'Byty před prodejem',
     summary:
       'Maluju byty před prodejem nebo před focením. Hlídám čistý výsledek a neutrální tón, který dobře funguje na prohlídkách.',
@@ -275,6 +283,7 @@ const rawPainters = [
   {
     id: 'filip-horak',
     name: 'Filip Horák',
+    experience: '9 let praxe',
     role: 'Kanceláře a menší provozy',
     summary:
       'Kanceláře a menší provozy zvládám rychle, aby byl co nejmenší zásah do běžného provozu a fungování týmu.',
@@ -294,6 +303,7 @@ const rawPainters = [
   {
     id: 'adam-benes',
     name: 'Adam Beneš',
+    experience: '7 let praxe',
     role: 'Barevné stěny a akcenty',
     summary:
       'Kromě klasické bílé dělám rád i barevné akcenty, dětské pokoje nebo výraznější stěny v obýváku.',

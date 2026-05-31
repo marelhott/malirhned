@@ -1,283 +1,175 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
-import { decisionPaths } from '../lib/data'
+import { createSearchFromBooking, bookingDefaults, bookingOptions, getAvailablePaintersPreview } from '../lib/booking'
 
-const firstRowFeatures = [
+const valuePoints = [
   {
-    icon: 'calculator',
-    title: 'Cena za pár kroků',
-    text: 'Nevíte metry? Stačí dispozice.',
+    title: 'Spočítaná cena hned',
+    text: 'Bez čekání na první telefon nebo obecný formulář.',
   },
   {
-    icon: 'calendar',
-    title: 'Nejbližší možnosti',
-    text: 'Termín nebo člověk podle potřeby.',
+    title: 'Nejbližší reálné termíny',
+    text: 'Uvidíte, kdy se dá opravdu začít a jaká je kapacita.',
   },
   {
-    icon: 'users',
-    title: 'Skuteční malíři',
-    text: 'Dostupnost a běžná cena.',
+    title: 'Ověřený malíř napřímo',
+    text: 'Termín drží konkrétní člověk, který se vám ozve přímo.',
   },
 ]
 
-const lowerCards = [
+const workflowSteps = [
   {
-    key: 'price',
-    label: 'Cena',
-    title: 'Orientační cena bez zbytečného čekání',
-    text: 'Stačí lokalita, dispozice nebo metry a hned vidíte realistický rozsah ceny.',
+    step: '1',
+    title: 'Spočítat cenu',
+    text: 'Základní zadání stačí k orientačnímu rozsahu.',
   },
   {
-    key: 'calendar',
-    label: 'Termín',
-    title: 'Volné termíny dřív než první telefon',
-    text: 'Nejdřív se podíváte, kdy to dává smysl. Až potom řešíte domluvu.',
+    step: '2',
+    title: 'Najít termín',
+    text: 'Kalendář ukáže nejbližší volné možnosti a vytíženost dní.',
   },
   {
-    key: 'painters',
-    label: 'Malíři',
-    title: 'Skuteční lidé, ne anonymní seznam',
-    text: 'Vyberete si podle obličeje, stylu práce, běžné ceny i nejbližší dostupnosti.',
+    step: '3',
+    title: 'Dokončit objednávku',
+    text: 'Potvrdíte malíře, termín a odešlete hotové zadání.',
   },
 ]
-
-function HeroMiniIcon({ type }) {
-  if (type === 'calculator') {
-    return (
-      <div className="landing-mini-icon" aria-hidden="true">
-        <div className="landing-mini-calculator" />
-      </div>
-    )
-  }
-
-  if (type === 'calendar') {
-    return (
-      <div className="landing-mini-icon" aria-hidden="true">
-        <div className="landing-mini-calendar" />
-      </div>
-    )
-  }
-
-  return (
-    <div className="landing-mini-icon" aria-hidden="true">
-      <div className="landing-mini-users" />
-    </div>
-  )
-}
-
-function ChoiceGraphic({ type }) {
-  if (type === 'painters') {
-    return (
-      <div className="landing-choice-graphic landing-choice-graphic--dark" aria-hidden="true">
-        <div className="choice-profile-card">
-          <div className="choice-avatar-circle" />
-          <div className="choice-profile-lines">
-            <span />
-            <span />
-          </div>
-          <div className="choice-profile-tags">
-            <div className="choice-tag">
-              <span className="choice-tag-dot" />
-              <span />
-            </div>
-            <div className="choice-tag">
-              <span className="choice-tag-pin" />
-              <span />
-            </div>
-          </div>
-          <div className="choice-progress">
-            <div className="choice-progress-head">
-              <span />
-              <span />
-            </div>
-            <div className="choice-progress-bar">
-              <i />
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="landing-choice-graphic landing-choice-graphic--light" aria-hidden="true">
-      <div className="choice-calendar-card">
-        <div className="choice-calendar-top">
-          <span />
-          <div>
-            <i />
-            <i />
-          </div>
-        </div>
-        <div className="choice-calendar-week">
-          {Array.from({ length: 7 }).map((_, index) => (
-            <span key={index} />
-          ))}
-        </div>
-        <div className="choice-calendar-grid">
-          {Array.from({ length: 21 }).map((_, index) => (
-            <i key={index} className={index === 9 ? 'is-active' : ''} />
-          ))}
-        </div>
-        <div className="choice-calendar-selected">
-          <span />
-          <div>
-            <i />
-            <i />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function LowerCardGraphic({ type }) {
-  if (type === 'price') {
-    return (
-      <div className="landing-lower-graphic landing-lower-graphic--price" aria-hidden="true">
-        <div className="lower-float-card lower-float-card--price">
-          <span>2+1</span>
-          <strong>10 500–14 000 Kč</strong>
-        </div>
-        <div className="lower-float-card lower-float-card--note">
-          <p>Nevíte metry? Stačí dispozice.</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (type === 'calendar') {
-    return (
-      <div className="landing-lower-graphic landing-lower-graphic--calendar" aria-hidden="true">
-        <div className="lower-float-card lower-float-card--bars">
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="lower-float-card lower-float-card--days">
-          <span>Středa</span>
-          <span>Pátek</span>
-          <span>Pondělí</span>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="landing-lower-graphic landing-lower-graphic--painters" aria-hidden="true">
-      <div className="lower-avatar-stack">
-        <span>P</span>
-        <span>M</span>
-      </div>
-      <div className="lower-float-card lower-float-card--profile">
-        <strong>Petr</strong>
-        <span>Po nájemníkovi</span>
-      </div>
-    </div>
-  )
-}
 
 export function HomePage() {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState({
+    location: bookingDefaults.location,
+    propertyType: bookingDefaults.propertyType,
+    size: bookingDefaults.size,
+    workType: bookingDefaults.workType,
+  })
+
+  const paintersPreview = getAvailablePaintersPreview()
+
+  function handleFieldChange(event) {
+    const { name, value } = event.target
+    setFormData((current) => ({ ...current, [name]: value }))
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    navigate(`/kalkulacka?${createSearchFromBooking(formData)}`)
+  }
+
   return (
     <AppShell>
-      <div className="landing-blur-orb" aria-hidden="true" />
-
-      <div className="landing-main">
-        <section className="landing-hero">
-          <div className="landing-eyebrow">
-            <span className="landing-eyebrow-dot" />
-            Praha a Středočeský kraj
-          </div>
-
-          <h1 className="landing-title">
-            Cena, termín a malíř
-            <br />
-            <span>bez chaosu.</span>
-          </h1>
-
-          <p className="landing-subtitle">
-            Bleskově spočítáme orientační cenu a pak si buď najdete nejbližší termín, nebo rovnou
-            vyberete konkrétního malíře.
-          </p>
-
-          <div className="landing-mini-feature-row">
-            {firstRowFeatures.map((item) => (
-              <article className="landing-mini-feature" key={item.title}>
-                <HeroMiniIcon type={item.icon} />
-                <div>
-                  <h3>{item.title}</h3>
-                  <p>{item.text}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="landing-choice-grid">
-            {decisionPaths.map((path) => (
-              <Link
-                key={path.key}
-                className={`landing-choice-card landing-choice-card--${path.key}`}
-                to={path.href}
-              >
-                <ChoiceGraphic type={path.key} />
-                <div className="landing-choice-copy">
-                  <p>První krok</p>
-                  <h2>{path.title}</h2>
-                  <span>{path.subtitle}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="landing-clarification">
-          <div className="landing-clarification-inner">
-            <div className="landing-info-icon" aria-hidden="true">
-              i
+      <main className="booking-home">
+        <section className="booking-home-hero">
+          <div className="booking-home-copy">
+            <div className="landing-eyebrow booking-home-eyebrow">
+              <span className="landing-eyebrow-dot" />
+              Praha a Středočeský kraj
             </div>
-            <h2>
-              Nejdřív jasno, potom <span>teprve domluva.</span>
-            </h2>
+
+            <h1>Malíř, když ho potřebujete hned.</h1>
             <p>
-              Nejdete do anonymní poptávky. Systém orientační ceny je součástí obou cest.
-              Následně řešíte konkrétní termín nebo člověka.
+              Spočítejte orientační cenu, vyberte nejbližší termín a dostupný malíř se vám ozve
+              napřímo.
             </p>
-            <Link className="landing-inline-link" to="/objednat">
-              Vyzkoušet zadání
-              <span>→</span>
-            </Link>
+
+            <div className="booking-home-points">
+              {valuePoints.map((point) => (
+                <article key={point.title}>
+                  <strong>{point.title}</strong>
+                  <span>{point.text}</span>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <form className="booking-home-form" onSubmit={handleSubmit}>
+            <div className="booking-card-head">
+              <span>Start objednávky</span>
+              <h2>Spočítejte cenu a přejděte rovnou na termíny</h2>
+            </div>
+
+            <div className="booking-home-grid">
+              <label>
+                <span>Lokalita</span>
+                <input name="location" value={formData.location} onChange={handleFieldChange} />
+              </label>
+
+              <label>
+                <span>Typ prostoru</span>
+                <select name="propertyType" value={formData.propertyType} onChange={handleFieldChange}>
+                  {bookingOptions.propertyTypes.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Velikost / dispozice</span>
+                <select name="size" value={formData.size} onChange={handleFieldChange}>
+                  {bookingOptions.sizes.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span>Typ práce</span>
+                <select name="workType" value={formData.workType} onChange={handleFieldChange}>
+                  {bookingOptions.workTypes.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <button className="primary-button booking-submit" type="submit">
+              Spočítat cenu a zobrazit termíny
+            </button>
+
+            <a className="ghost-button booking-secondary-link" href="#jak-to-funguje">
+              Jak to funguje
+            </a>
+          </form>
+        </section>
+
+        <section className="booking-home-band" id="jak-to-funguje">
+          <div className="booking-band-head">
+            <span>Jak to funguje</span>
+            <h2>Jednoduchý tok bez obvolávání a bez slepých mezikroků.</h2>
+          </div>
+
+          <div className="booking-step-grid">
+            {workflowSteps.map((item) => (
+              <article className="booking-step-card" key={item.step}>
+                <span>{item.step}</span>
+                <h3>{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            ))}
           </div>
         </section>
 
-        <section className="landing-system">
-          <div className="landing-system-head">
-            <h2>
-              Jeden systém,
-              <br />
-              dvě vstupní cesty.
-            </h2>
-            <p>
-              Převzali jsme lepší strukturu produktu: samostatný kalendář, samostatný přehled
-              malířů a detail profilu až ve chvíli, kdy ho opravdu potřebujete.
-            </p>
+        <section className="booking-home-band booking-home-band--trust">
+          <div className="booking-band-head">
+            <span>Dostupní ověření malíři</span>
+            <h2>Za termínem stojí konkrétní člověk, ne anonymní formulář.</h2>
           </div>
 
-          <div className="landing-lower-grid">
-            {lowerCards.map((card) => (
-              <article className="landing-lower-card" key={card.key}>
-                <div className="landing-lower-visual-shell">
-                  <LowerCardGraphic type={card.key} />
-                </div>
-                <div className="landing-lower-copy">
-                  <span>{card.label}</span>
-                  <h3>{card.title}</h3>
-                  <p>{card.text}</p>
+          <div className="booking-trust-grid">
+            {paintersPreview.map((painter) => (
+              <article className="booking-trust-card" key={painter.id}>
+                <img src={painter.image} alt={painter.name} />
+                <div>
+                  <strong>{painter.name}</strong>
+                  <span>{painter.role}</span>
+                  <p>{painter.shortDescription}</p>
                 </div>
               </article>
             ))}
           </div>
         </section>
-      </div>
+      </main>
     </AppShell>
   )
 }

@@ -1,283 +1,275 @@
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
-import { calendarDays, dayNames, getRecommendedPaintersForDay, painterMap } from '../lib/data'
+import { PainterDetailModal } from '../components/PainterDetailModal'
+import { WorkflowProgress } from '../components/WorkflowProgress'
+import {
+  calendarDays,
+  createOrderPayload,
+  createSearchFromBooking,
+  formatPriceRange,
+  getBookingSummary,
+  getCalendarState,
+  getDayByNumber,
+  getDayLabel,
+  getDayPriceRange,
+  getRecommendedTerms,
+  getSlotsForDay,
+  parseBookingSearch,
+} from '../lib/booking'
 
-function getDayLabel(day) {
-  return `${day}. dubna`
-}
-
-function getDayStateLabel(day) {
-  if (!day.jobs.length) return 'volno'
-  return `${day.jobs.length}x`
-}
-
-function getJobClass(type) {
-  switch (type) {
-    case 'available':
-      return 'is-available'
-    case 'high':
-      return 'is-high'
-    default:
-      return 'is-soft'
-  }
-}
-
-function getTimelineLabel(type) {
-  switch (type) {
-    case 'available':
-      return 'Volnější start'
-    case 'high':
-      return 'Silnější vytížení'
-    default:
-      return 'Odpolední blok'
-  }
-}
+const availabilityLegend = [
+  { label: 'Volno', tone: 'free' },
+  { label: 'Omezená kapacita', tone: 'limited' },
+  { label: 'Poslední místo', tone: 'last' },
+  { label: 'Plno', tone: 'full' },
+  { label: 'Nedostupné', tone: 'off' },
+]
 
 export function CalendarPage() {
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [selectedDay, setSelectedDay] = useState(Number(searchParams.get('day')) || 10)
-  const [isDayModalOpen, setIsDayModalOpen] = useState(false)
+  const [searchParams] = useSearchParams()
+  const bookingState = parseBookingSearch(searchParams)
+  const initialDay = Number(searchParams.get('day')) || 10
+  const [selectedDay, setSelectedDay] = useState(initialDay)
+  const [selectedSlotId, setSelectedSlotId] = useState('')
+  const [isPainterModalOpen, setIsPainterModalOpen] = useState(false)
 
-  const selectedCalendarDay = useMemo(
-    () => calendarDays.find((day) => day.day === selectedDay && !day.muted) ?? calendarDays[9],
-    [selectedDay],
-  )
+  const summary = getBookingSummary(bookingState)
+  const selectedDayData = getDayByNumber(selectedDay) ?? getDayByNumber(10)
+  const selectedDayRange = getDayPriceRange(selectedDayData, bookingState)
+  const recommendedTerms = getRecommendedTerms(bookingState)
+  const slots = getSlotsForDay(selectedDay, bookingState)
+  const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) ?? slots[0] ?? null
 
-  const recommendedPaintersForDay = useMemo(
-    () => getRecommendedPaintersForDay(selectedCalendarDay.day),
-    [selectedCalendarDay.day],
-  )
-
-  function openDayDetail(dayNumber) {
+  function chooseDay(dayNumber) {
     setSelectedDay(dayNumber)
-    setIsDayModalOpen(true)
+    setSelectedSlotId('')
   }
 
-  function closeDayDetail() {
-    setIsDayModalOpen(false)
+  function confirmSelectedSlot() {
+    if (!selectedSlot) return
+
+    const orderPayload = createOrderPayload(bookingState, selectedSlot, selectedSlot.painter?.id)
+    navigate(`/objednat?${createSearchFromBooking(orderPayload)}`)
   }
 
   return (
     <AppShell>
-      <main className="calendar-page-main">
-        <section className="calendar-page-shell">
-          <header className="calendar-page-header">
-            <Link className="calendar-page-back" to="/">
-              <span aria-hidden="true">←</span>
-              Zpět na úvod
-            </Link>
+      <main className="booking-page">
+        <section className="booking-shell">
+          <WorkflowProgress currentStep={2} />
 
-            <div className="calendar-page-badge-wrap">
-              <span className="calendar-page-badge">Kalendář dostupnosti</span>
-            </div>
-
-            <h1>Vyberte termín podle skutečné kapacity</h1>
-            <p>
-              Samostatný kalendář dává nejrychlejší odpověď na otázku, kdy se může malovat
-              a kdo v tom dni ještě stíhá vzít zakázku.
-            </p>
+          <header className="booking-page-head">
+            <span>Krok 2</span>
+            <h1>Nejbližší dostupné termíny</h1>
+            <p>Podle vašeho zadání teď vybíráte den, kdy se dá začít a jaká je kapacita.</p>
           </header>
 
-          <div className="calendar-page-layout">
-            <aside className="calendar-page-sidebar">
-              <label className="calendar-search">
-                <span aria-hidden="true">⌕</span>
-                <input type="text" placeholder="Hledat lokalitu nebo malíře" />
-              </label>
-
-              <section className="calendar-sidebar-group">
-                <span className="calendar-sidebar-kicker">Přehled</span>
-                <div className="calendar-sidebar-links">
-                  <button className="is-active" type="button">
-                    Duben 2026
-                  </button>
-                  <button type="button">Do 48 hodin</button>
-                  <button type="button">Po nájemníkovi</button>
-                </div>
-              </section>
-
-              <section className="calendar-sidebar-card">
-                <span>Vybraný den</span>
-                <h2>{getDayLabel(selectedCalendarDay.day)}</h2>
-                <p>
-                  {selectedCalendarDay.jobs.length
-                    ? `${selectedCalendarDay.jobs.length} malíři mají v tomto dni nějakou kapacitu.`
-                    : 'Tento den je zatím bez potvrzené kapacity.'}
-                </p>
-
-                <div className="calendar-sidebar-slots">
-                  {selectedCalendarDay.jobs.map((job) => (
-                    <div key={`${job.painter}-${job.time}`}>
-                      <span>{job.painter}</span>
-                      <strong>{job.time}</strong>
-                    </div>
-                  ))}
-                </div>
-
-                <Link className="calendar-sidebar-cta" to={`/objednat?date=${selectedCalendarDay.day}.%20dubna`}>
-                  Pokračovat s tímto dnem
-                </Link>
-              </section>
-            </aside>
-
-            <section className="calendar-page-content">
-              <div className="calendar-board-toolbar">
-                <div>
-                  <span>Duben 2026</span>
-                  <h2>Kalendář dostupnosti malířů</h2>
-                </div>
-
-                <div className="calendar-board-actions">
-                  <button type="button">Dnes</button>
-                  <button className="is-active" type="button">
-                    Měsíční pohled
-                  </button>
-                </div>
-              </div>
-
-              <div className="calendar-weekdays">
-                {dayNames.map((dayName) => (
-                  <span key={dayName}>{dayName}</span>
-                ))}
-              </div>
-
-              <div className="calendar-board-grid">
-                {calendarDays.map((day, index) => (
-                  <button
-                    key={`${day.day}-${index}`}
-                    className={`calendar-day-card ${day.muted ? 'is-muted' : ''} ${
-                      selectedDay === day.day && !day.muted ? 'is-selected' : ''
-                    }`}
-                    type="button"
-                    onClick={() => !day.muted && openDayDetail(day.day)}
-                    disabled={day.muted}
-                  >
-                    <div className="calendar-day-card-top">
-                      <strong>{day.day}</strong>
-                      {!day.muted && <span>{getDayStateLabel(day)}</span>}
-                    </div>
-
-                    <div className="calendar-day-card-slots">
-                      {day.jobs.slice(0, 3).map((job) => (
-                        <div
-                          key={`${job.painter}-${job.time}`}
-                          className={`calendar-day-chip ${getJobClass(job.type)}`}
-                        >
-                          <span>{job.painter}</span>
-                          <small>{job.time}</small>
-                        </div>
-                      ))}
-                    </div>
-
-                    {!day.muted && <em>Rozkliknout den</em>}
-                  </button>
-                ))}
-              </div>
-
-              <div className="calendar-recommendations">
-                <div className="calendar-recommendations-top">
-                  <div>
-                    <span>Pro vybraný den</span>
-                    <h3>Doporučení malíři</h3>
-                  </div>
-                  <Link to="/maliri">Otevřít celý adresář</Link>
-                </div>
-
-                <div className="calendar-recommendations-grid">
-                  {recommendedPaintersForDay.map((painter) => (
-                    <button
-                      key={painter.id}
-                      className="calendar-recommendation-card"
-                      type="button"
-                      onClick={() => navigate(`/malir/${painter.id}`)}
-                    >
-                      <div className="calendar-recommendation-head">
-                        <div>{painter.avatar}</div>
-                        <section>
-                          <strong>{painter.name}</strong>
-                          <span>{painter.role}</span>
-                        </section>
-                      </div>
-
-                      <div className="calendar-recommendation-meta">
-                        <strong>{painter.price}</strong>
-                        <span>{painter.response}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
+          <div className="booking-summary-strip">
+            <article>
+              <span>Cena</span>
+              <strong>{summary.priceLabel}</strong>
+            </article>
+            <article>
+              <span>Lokalita</span>
+              <strong>{bookingState.location}</strong>
+            </article>
+            <article>
+              <span>Prostor</span>
+              <strong>{bookingState.propertyType}</strong>
+            </article>
+            <article>
+              <span>Rozsah</span>
+              <strong>{summary.areaLabel}</strong>
+            </article>
           </div>
-        </section>
-      </main>
 
-      {isDayModalOpen && (
-        <div className="calendar-modal-overlay" role="presentation" onClick={closeDayDetail}>
-          <section
-            className="calendar-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="calendar-modal-title"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <header className="calendar-modal-head">
-              <div>
-                <span>Detail dne</span>
-                <h2 id="calendar-modal-title">{getDayLabel(selectedCalendarDay.day)}</h2>
+          <section className="booking-section booking-section--stacked">
+            <div className="booking-card-head">
+              <span>Doporučené termíny</span>
+              <h2>Kdy nejdřív a za kolik?</h2>
+            </div>
+
+            <div className="booking-recommend-grid">
+              {recommendedTerms.map((term) => (
+                <button
+                  key={term.key}
+                  className={`booking-recommend-card ${selectedDay === term.day ? 'is-active' : ''}`}
+                  type="button"
+                  onClick={() => chooseDay(term.day)}
+                >
+                  <span>{term.badge}</span>
+                  <strong>{getDayLabel(term.day)}</strong>
+                  <p>{term.time}</p>
+                  <small>{term.caption}</small>
+                  <em>{formatPriceRange(term.range)}</em>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="booking-calendar-layout">
+            <section className="booking-calendar-panel">
+              <div className="booking-card-head">
+                <span>Kalendář dostupnosti</span>
+                <h2>Vyberte den podle kapacity</h2>
               </div>
 
-              <button aria-label="Zavřít detail dne" type="button" onClick={closeDayDetail}>
-                ×
-              </button>
-            </header>
+              <div className="booking-legend">
+                {availabilityLegend.map((item) => (
+                  <div key={item.label}>
+                    <i className={`is-${item.tone}`} />
+                    <span>{item.label}</span>
+                  </div>
+                ))}
+              </div>
 
-            <div className="calendar-modal-body">
-              <p>
-                Níže vidíte podrobný rozpis kapacity vybraného dne. Vyberte si čas a malíře,
-                který vám vyhovuje.
-              </p>
-
-              <div className="calendar-modal-timeline">
-                {selectedCalendarDay.jobs.map((job) => {
-                  const painter = painterMap[job.painter]
+              <div className="booking-calendar-grid">
+                {calendarDays.map((day, index) => {
+                  const state = getCalendarState(day)
+                  const isInteractive = !day.muted
 
                   return (
-                    <article key={`${job.painter}-${job.time}`} className="calendar-modal-event">
-                      <i className={`calendar-modal-dot ${getJobClass(job.type)}`} />
-
-                      <div className="calendar-modal-event-top">
-                        <strong>{job.time}</strong>
-                        <span className={getJobClass(job.type)}>{getTimelineLabel(job.type)}</span>
+                    <button
+                      key={`${day.day}-${index}`}
+                      className={`booking-day-card is-${state.tone} ${selectedDay === day.day && isInteractive ? 'is-selected' : ''}`}
+                      type="button"
+                      disabled={!isInteractive}
+                      onClick={() => isInteractive && chooseDay(day.day)}
+                    >
+                      <div>
+                        <strong>{day.day}</strong>
+                        <span>{state.label}</span>
                       </div>
-
-                      <button
-                        className="calendar-modal-event-card"
-                        type="button"
-                        onClick={() => navigate(`/malir/${painter?.id ?? ''}`)}
-                      >
-                        <div>
-                          <h3>{job.painter}</h3>
-                          <span>{painter?.priceRangeCompact ?? painter?.price ?? 'Cena po zadání'}</span>
-                        </div>
-                        <p>{painter?.role ?? 'Malíř pokojů'}</p>
-                      </button>
-                    </article>
+                      <small>{state.description}</small>
+                      <em>{day.jobs.length ? `${day.jobs.length} možnosti` : 'Bez slotu'}</em>
+                    </button>
                   )
                 })}
               </div>
-            </div>
+            </section>
 
-            <footer className="calendar-modal-footer">
-              <Link className="calendar-modal-cta" to={`/objednat?date=${selectedCalendarDay.day}.%20dubna`}>
-                Vybrat tento den
-              </Link>
-            </footer>
+            <aside className="booking-day-detail">
+              <div className="booking-day-summary">
+                <span>Vybraný den</span>
+                <h2>{getDayLabel(selectedDayData.day)}</h2>
+                <p>{formatPriceRange(selectedDayRange)}</p>
+                <small>
+                  {slots.length
+                    ? `${slots.length} dostupné sloty pro vaše zadání`
+                    : 'Tento den teď nemá vhodný volný slot.'}
+                </small>
+              </div>
+
+              <div className="booking-slot-list">
+                {slots.map((slot) => (
+                  <article
+                    key={slot.id}
+                    className={`booking-slot-card ${selectedSlot?.id === slot.id ? 'is-selected' : ''}`}
+                  >
+                    <div className="booking-slot-top">
+                      <div>
+                        <strong>{slot.time}</strong>
+                        <span>{slot.state.label}</span>
+                      </div>
+                      <em>{formatPriceRange(slot.priceRange)}</em>
+                    </div>
+
+                    <div className="booking-slot-painter">
+                      <img src={slot.painter.image} alt={slot.painter.name} />
+                      <div>
+                        <h3>{slot.painter.name}</h3>
+                        <p>{slot.painter.role}</p>
+                      </div>
+                    </div>
+
+                    <p>{slot.compactFit}</p>
+
+                    <div className="booking-slot-actions">
+                      <button
+                        className="ghost-button"
+                        type="button"
+                        onClick={() => {
+                          setSelectedSlotId(slot.id)
+                          setIsPainterModalOpen(true)
+                        }}
+                      >
+                        Detail malíře
+                      </button>
+                      <button
+                        className="primary-button"
+                        type="button"
+                        onClick={() => {
+                          setSelectedSlotId(slot.id)
+                          setIsPainterModalOpen(false)
+                        }}
+                      >
+                        Pokračovat s tímto termínem
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              {selectedSlot ? (
+                <section className="booking-painter-preview">
+                  <div className="booking-card-head">
+                    <span>Dostupný ověřený malíř</span>
+                    <h2>{selectedSlot.painter.name}</h2>
+                  </div>
+
+                  <div className="booking-painter-preview-head">
+                    <img src={selectedSlot.painter.image} alt={selectedSlot.painter.name} />
+                    <div>
+                      <strong>{selectedSlot.painter.role}</strong>
+                      <p>{selectedSlot.painter.response}</p>
+                    </div>
+                  </div>
+
+                  <div className="booking-painter-tags">
+                    {selectedSlot.painter.specialties.slice(0, 3).map((tag) => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+
+                  <div className="booking-painter-preview-meta">
+                    <div>
+                      <span>Vybraný termín</span>
+                      <strong>
+                        {getDayLabel(selectedSlot.day)} / {selectedSlot.time}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>Orientační cena</span>
+                      <strong>{formatPriceRange(selectedSlot.priceRange)}</strong>
+                    </div>
+                  </div>
+
+                  <div className="booking-slot-actions">
+                    <button className="ghost-button" type="button" onClick={() => setIsPainterModalOpen(true)}>
+                      Detail malíře
+                    </button>
+                    <button className="primary-button" type="button" onClick={confirmSelectedSlot}>
+                      Potvrdit malíře a termín
+                    </button>
+                  </div>
+                </section>
+              ) : null}
+            </aside>
           </section>
-        </div>
-      )}
+        </section>
+
+        <PainterDetailModal
+          isOpen={isPainterModalOpen}
+          painter={selectedSlot?.painter ?? null}
+          priceLabel={selectedSlot ? formatPriceRange(selectedSlot.priceRange) : summary.priceLabel}
+          selectedDate={selectedSlot ? getDayLabel(selectedSlot.day) : summary.dateLabel}
+          selectedTime={selectedSlot?.time ?? summary.slotLabel}
+          onClose={() => setIsPainterModalOpen(false)}
+          onConfirm={confirmSelectedSlot}
+        />
+      </main>
     </AppShell>
   )
 }

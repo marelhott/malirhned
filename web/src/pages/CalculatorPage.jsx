@@ -1,329 +1,238 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { AppShell } from '../components/AppShell'
+import { WorkflowProgress } from '../components/WorkflowProgress'
+import {
+  bookingOptions,
+  calculatePriceRange,
+  createSearchFromBooking,
+  formatPriceRange,
+  parseBookingSearch,
+} from '../lib/booking'
 
-function calculatePrice(form) {
-  const area = Number(form.totalArea) || 0
-  if (area <= 0) return 0
-
-  const FLOOR_AREA_RATE = 10000 / 55
-  const WALL_AREA_RATE = FLOOR_AREA_RATE / 3.5
-  const MIN_PRICE = 3000
-
-  const basePrice = Math.max(
-    form.selectedWork === 'Půdorys' ? area * FLOOR_AREA_RATE : area * WALL_AREA_RATE,
-    MIN_PRICE,
-  )
-
-  let total = basePrice
-
-  if (form.selectedWork === 'Půdorys') {
-    if (form.ceilingHeightForPrice === '350') total += basePrice * 0.1
-    else if (form.ceilingHeightForPrice === '450') total += basePrice * 0.2
-  }
-
-  if (form.repairType === 'Malé') total += basePrice * 0.17
-  else if (form.repairType === 'Střední') total += basePrice * 0.35
-  else if (form.repairType === 'Velké') total += basePrice * 0.6
-
-  if (form.material === 'Ano') total += basePrice * 0.2
-  if (form.furnitureMoving === 'Ano') total += basePrice * 0.12
-  if (form.covering === 'Ano') total += basePrice * 0.05
-  if (form.cleaning === 'Potřebuji') total += basePrice * 0.1
-
-  return Math.round(total)
-}
-
-function ToggleCard({ active, title, details, onClick }) {
+function ToggleButton({ active, label, onClick }) {
   return (
-    <button className={`calculator-choice-card ${active ? 'is-active' : ''}`} type="button" onClick={onClick}>
-      <strong>{title}</strong>
-      {details ? <span>{details}</span> : null}
-    </button>
-  )
-}
-
-function BinaryChoice({ active, label, onClick }) {
-  return (
-    <button className={`calculator-binary ${active ? 'is-active' : ''}`} type="button" onClick={onClick}>
-      <i aria-hidden="true" />
-      <span>{label}</span>
+    <button className={`booking-toggle ${active ? 'is-active' : ''}`} type="button" onClick={onClick}>
+      {label}
     </button>
   )
 }
 
 export function CalculatorPage() {
-  const [form, setForm] = useState({
-    selectedWork: 'Půdorys',
-    totalArea: '',
-    ceilingHeightForPrice: '250',
-    repairType: 'Malé',
-    material: 'Ano',
-    furnitureMoving: 'Ano',
-    covering: 'Ano',
-    cleaning: 'Potřebuji',
-    emptySpace: 'Ano',
-    carpets: 'Ne',
-    roomCount: '',
-    spaceType: 'Pokoj',
-    additionalInfo: '',
-  })
-
-  const totalPrice = useMemo(() => calculatePrice(form), [form])
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [formData, setFormData] = useState(() => parseBookingSearch(searchParams))
+  const priceRange = useMemo(() => calculatePriceRange(formData), [formData])
 
   function setField(key, value) {
-    setForm((current) => ({ ...current, [key]: value }))
+    setFormData((current) => ({ ...current, [key]: value }))
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    navigate(`/kalendar?${createSearchFromBooking(formData)}`)
   }
 
   return (
     <AppShell>
-      <main className="calculator-page-main">
-        <section className="calculator-page-shell">
-          <header className="calculator-page-hero">
-            <span className="calculator-page-badge">Kalkulačka</span>
-            <h1>Kalkulačka vychází přímo z provozní logiky malířských zakázek.</h1>
-            <p>
-              Přenesli jsme sem stejnou strukturu výpočtu, jaká se používá v původním nástroji.
-              Jen je vizuálně sjednocená s celým webem a bez odesílání poptávky.
-            </p>
+      <main className="booking-page">
+        <section className="booking-shell">
+          <WorkflowProgress currentStep={1} />
+
+          <header className="booking-page-head">
+            <span>Krok 1</span>
+            <h1>Rychlá kalkulačka ceny</h1>
+            <p>Zadání držíme co nejkratší. Cena je orientační a hned naváže na dostupné termíny.</p>
           </header>
 
-          <section className="calculator-layout">
-            <div className="calculator-panel calculator-panel--full">
-              <section className="calculator-section">
-                <div className="calculator-section-head">
-                  <span>Typ plochy</span>
-                  <h2>Co chcete počítat</h2>
+          <section className="booking-layout">
+            <form className="booking-surface" onSubmit={handleSubmit}>
+              <div className="booking-section">
+                <div className="booking-card-head">
+                  <span>Zadání zakázky</span>
+                  <h2>Co se bude malovat</h2>
                 </div>
 
-                <div className="calculator-choice-grid calculator-choice-grid--two">
-                  <ToggleCard
-                    active={form.selectedWork === 'Půdorys'}
-                    title="Podlahová plocha"
-                    details="rozměr podlahy, např. 5×4 m"
-                    onClick={() => setField('selectedWork', 'Půdorys')}
-                  />
-                  <ToggleCard
-                    active={form.selectedWork === 'Stěna'}
-                    title="Stěnová plocha"
-                    details="součet stěn a stropů"
-                    onClick={() => setField('selectedWork', 'Stěna')}
-                  />
-                </div>
-
-                <label className="calculator-field">
-                  <span>Celková plocha v m²</span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="Např. 55"
-                    value={form.totalArea}
-                    onChange={(event) => setField('totalArea', event.target.value)}
-                  />
-                </label>
-
-                {form.selectedWork === 'Půdorys' ? (
-                  <div className="calculator-subsection">
-                    <span>Výška stropu</span>
-                    <div className="calculator-choice-grid calculator-choice-grid--three">
-                      <ToggleCard
-                        active={form.ceilingHeightForPrice === '250'}
-                        title="250 cm"
-                        details="standardní výška"
-                        onClick={() => setField('ceilingHeightForPrice', '250')}
-                      />
-                      <ToggleCard
-                        active={form.ceilingHeightForPrice === '350'}
-                        title="350 cm"
-                        details="vyšší prostor"
-                        onClick={() => setField('ceilingHeightForPrice', '350')}
-                      />
-                      <ToggleCard
-                        active={form.ceilingHeightForPrice === '450'}
-                        title="450 cm"
-                        details="velmi vysoký strop"
-                        onClick={() => setField('ceilingHeightForPrice', '450')}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </section>
-
-              <section className="calculator-section">
-                <div className="calculator-section-head">
-                  <span>Typ opravy</span>
-                  <h2>Jak moc se budou stěny připravovat</h2>
-                </div>
-
-                <div className="calculator-choice-grid calculator-choice-grid--two">
-                  <ToggleCard
-                    active={form.repairType === 'Malé'}
-                    title="Malé opravy"
-                    details="dírky a drobné trhliny"
-                    onClick={() => setField('repairType', 'Malé')}
-                  />
-                  <ToggleCard
-                    active={form.repairType === 'Střední'}
-                    title="Střední opravy"
-                    details="větší lokální zásahy"
-                    onClick={() => setField('repairType', 'Střední')}
-                  />
-                  <ToggleCard
-                    active={form.repairType === 'Velké'}
-                    title="Velké opravy"
-                    details="rozsáhlejší příprava"
-                    onClick={() => setField('repairType', 'Velké')}
-                  />
-                  <ToggleCard
-                    active={form.repairType === 'Žádné'}
-                    title="Bez oprav"
-                    details="jen malování"
-                    onClick={() => setField('repairType', 'Žádné')}
-                  />
-                </div>
-              </section>
-
-              <section className="calculator-section">
-                <div className="calculator-section-head">
-                  <span>Služby</span>
-                  <h2>Co má být v ceně započítané</h2>
-                </div>
-
-                <div className="calculator-binary-grid">
-                  <div className="calculator-binary-group">
-                    <strong>Barvu zajistí malíř?</strong>
-                    <div>
-                      <BinaryChoice active={form.material === 'Ano'} label="Ano, zajistí" onClick={() => setField('material', 'Ano')} />
-                      <BinaryChoice active={form.material === 'Ne'} label="Ne, vlastní" onClick={() => setField('material', 'Ne')} />
-                    </div>
-                  </div>
-
-                  <div className="calculator-binary-group">
-                    <strong>Posunutí nábytku?</strong>
-                    <div>
-                      <BinaryChoice active={form.furnitureMoving === 'Ano'} label="Ano" onClick={() => setField('furnitureMoving', 'Ano')} />
-                      <BinaryChoice active={form.furnitureMoving === 'Ne'} label="Ne" onClick={() => setField('furnitureMoving', 'Ne')} />
-                    </div>
-                  </div>
-
-                  <div className="calculator-binary-group">
-                    <strong>Zakrývání a oblepování?</strong>
-                    <div>
-                      <BinaryChoice active={form.covering === 'Ano'} label="Ano" onClick={() => setField('covering', 'Ano')} />
-                      <BinaryChoice active={form.covering === 'Ne'} label="Ne" onClick={() => setField('covering', 'Ne')} />
-                    </div>
-                  </div>
-
-                  <div className="calculator-binary-group">
-                    <strong>Úklid po práci?</strong>
-                    <div>
-                      <BinaryChoice active={form.cleaning === 'Potřebuji'} label="Potřebuji" onClick={() => setField('cleaning', 'Potřebuji')} />
-                      <BinaryChoice active={form.cleaning === 'Nepotřebuji'} label="Nepotřebuji" onClick={() => setField('cleaning', 'Nepotřebuji')} />
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <section className="calculator-section">
-                <div className="calculator-section-head">
-                  <span>Další údaje</span>
-                  <h2>Upřesnění prostoru</h2>
-                </div>
-
-                <div className="calculator-binary-grid">
-                  <div className="calculator-binary-group">
-                    <strong>Prázdný prostor?</strong>
-                    <div>
-                      <BinaryChoice active={form.emptySpace === 'Ano'} label="Ano" onClick={() => setField('emptySpace', 'Ano')} />
-                      <BinaryChoice active={form.emptySpace === 'Ne'} label="Ne" onClick={() => setField('emptySpace', 'Ne')} />
-                    </div>
-                  </div>
-
-                  <div className="calculator-binary-group">
-                    <strong>Koberce na podlaze?</strong>
-                    <div>
-                      <BinaryChoice active={form.carpets === 'Ano'} label="Ano" onClick={() => setField('carpets', 'Ano')} />
-                      <BinaryChoice active={form.carpets === 'Ne'} label="Ne" onClick={() => setField('carpets', 'Ne')} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="calculator-field-grid">
-                  <label className="calculator-field">
-                    <span>Počet místností</span>
+                <div className="booking-field-grid">
+                  <label>
+                    <span>Lokalita</span>
                     <input
-                      type="number"
-                      min="1"
-                      placeholder="Např. 3"
-                      value={form.roomCount}
-                      onChange={(event) => setField('roomCount', event.target.value)}
+                      name="location"
+                      value={formData.location}
+                      onChange={(event) => setField('location', event.target.value)}
                     />
                   </label>
 
-                  <label className="calculator-field">
+                  <label>
                     <span>Typ prostoru</span>
-                    <select value={form.spaceType} onChange={(event) => setField('spaceType', event.target.value)}>
-                      <option value="Pokoj">Pokoj</option>
-                      <option value="Byt">Byt</option>
-                      <option value="Dům">Dům</option>
-                      <option value="Společné prostory">Společné prostory</option>
-                      <option value="Obchod">Obchod</option>
-                      <option value="Pension">Pension</option>
-                      <option value="Kancelář">Kancelář</option>
+                    <select
+                      name="propertyType"
+                      value={formData.propertyType}
+                      onChange={(event) => setField('propertyType', event.target.value)}
+                    >
+                      {bookingOptions.propertyTypes.map((option) => (
+                        <option key={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    <span>Velikost / dispozice</span>
+                    <select name="size" value={formData.size} onChange={(event) => setField('size', event.target.value)}>
+                      {bookingOptions.sizes.map((option) => (
+                        <option key={option}>{option}</option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {formData.size === 'Vlastní metry' ? (
+                    <label>
+                      <span>Vlastní metry</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={formData.customArea}
+                        onChange={(event) => setField('customArea', event.target.value)}
+                        placeholder="Např. 78"
+                      />
+                    </label>
+                  ) : null}
+
+                  <label>
+                    <span>Typ práce</span>
+                    <select
+                      name="workType"
+                      value={formData.workType}
+                      onChange={(event) => setField('workType', event.target.value)}
+                    >
+                      {bookingOptions.workTypes.map((option) => (
+                        <option key={option}>{option}</option>
+                      ))}
                     </select>
                   </label>
                 </div>
+              </div>
 
-                <label className="calculator-field">
-                  <span>Doplňující informace</span>
-                  <textarea
-                    rows="5"
-                    placeholder="Sem si můžete poznačit vše, co bude mít vliv na rozsah nebo průběh zakázky."
-                    value={form.additionalInfo}
-                    onChange={(event) => setField('additionalInfo', event.target.value)}
-                  />
-                </label>
-              </section>
-            </div>
+              <div className="booking-section">
+                <div className="booking-card-head">
+                  <span>Upřesnění</span>
+                  <h2>Co má být v ceně</h2>
+                </div>
 
-            <aside className="calculator-summary-card">
-              <span>Přibližná cena</span>
-              <h2>{totalPrice.toLocaleString('cs-CZ')} Kč</h2>
-              <p>
-                Tohle je orientační výstup ze stejné logiky jako v původní kalkulačce. Slouží jen
-                pro rozhodnutí a porovnání, ne jako finální nabídka.
-              </p>
+                <div className="booking-toggle-grid">
+                  <div>
+                    <strong>Expresní termín</strong>
+                    <div>
+                      {bookingOptions.yesNo.map((option) => (
+                        <ToggleButton
+                          key={option}
+                          active={formData.express === option}
+                          label={option}
+                          onClick={() => setField('express', option)}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
-              <div className="calculator-summary-list">
-                <div>
-                  <span>Typ výpočtu</span>
-                  <strong>{form.selectedWork}</strong>
-                </div>
-                <div>
-                  <span>Plocha</span>
-                  <strong>{form.totalArea || '0'} m²</strong>
-                </div>
-                <div>
-                  <span>Typ opravy</span>
-                  <strong>{form.repairType}</strong>
-                </div>
-                <div>
-                  <span>Prostor</span>
-                  <strong>{form.spaceType}</strong>
+                  <div>
+                    <strong>Stropy</strong>
+                    <div>
+                      {bookingOptions.yesNo.map((option) => (
+                        <ToggleButton
+                          key={option}
+                          active={formData.ceiling === option}
+                          label={option}
+                          onClick={() => setField('ceiling', option)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <strong>Zakrytí</strong>
+                    <div>
+                      {bookingOptions.yesNo.map((option) => (
+                        <ToggleButton
+                          key={option}
+                          active={formData.covering === option}
+                          label={option}
+                          onClick={() => setField('covering', option)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <strong>Opravy stěn</strong>
+                    <div>
+                      {bookingOptions.repairLevels.map((option) => (
+                        <ToggleButton
+                          key={option}
+                          active={formData.repairs === option}
+                          label={option}
+                          onClick={() => setField('repairs', option)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <strong>Barvy</strong>
+                    <div>
+                      {bookingOptions.colorModes.map((option) => (
+                        <ToggleButton
+                          key={option}
+                          active={formData.colors === option}
+                          label={option}
+                          onClick={() => setField('colors', option)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <strong>Stav stěn</strong>
+                    <div>
+                      {bookingOptions.wallStates.map((option) => (
+                        <ToggleButton
+                          key={option}
+                          active={formData.wallState === option}
+                          label={option}
+                          onClick={() => setField('wallState', option)}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="calculator-note-card">
-                <strong>Bez odesílání poptávky</strong>
-                <p>
-                  Tady řešíme jen výpočet. Samotné zadání zakázky a navazující kontakt proběhne v
-                  další části webu.
-                </p>
+              <footer className="booking-form-footer">
+                <button className="primary-button" type="submit">
+                  Zobrazit nejbližší termíny
+                </button>
+              </footer>
+            </form>
+
+            <aside className="booking-summary">
+              <div className="booking-summary-card booking-summary-card--accent">
+                <span>Orientační cena</span>
+                <strong>{formatPriceRange(priceRange)}</strong>
+                <p>Finální cena se může změnit podle stavu stěn, rozsahu oprav a fotek z místa.</p>
               </div>
 
-              <Link className="calculator-summary-cta" to="/objednat">
-                Pokračovat na zadání zakázky
-              </Link>
+              <div className="booking-summary-card">
+                <span>V ceně počítáme</span>
+                <ul className="booking-summary-list">
+                  <li>základní rozsah malby podle dispozice nebo metrů</li>
+                  <li>zapracované zvolené příplatky a stav stěn</li>
+                  <li>návaznost na nejbližší vhodné termíny</li>
+                </ul>
+              </div>
+
+              <div className="booking-summary-card">
+                <span>Další krok</span>
+                <p>Po výpočtu rovnou uvidíte kalendář dostupnosti a vyberete si nejbližší vhodný den.</p>
+              </div>
             </aside>
           </section>
         </section>

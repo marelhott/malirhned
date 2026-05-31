@@ -81,18 +81,15 @@ export function AppShell({ children }) {
 
           <nav className="nav-links" aria-label="Hlavní navigace">
             <NavLink to="/">Úvod</NavLink>
+            <NavLink to="/kalkulacka">Cena</NavLink>
             <NavLink to="/kalendar">Kalendář</NavLink>
-            <NavLink to="/maliri">Malíři</NavLink>
-            <NavLink to="/objednat">Zadat zakázku</NavLink>
+            <NavLink to="/objednat">Objednávka</NavLink>
             <NavLink to="/o-nas">O nás</NavLink>
           </nav>
 
           <div className="topbar-actions">
-            <NavLink className="text-link" to="/kalkulacka">
-              Kalkulačka
-            </NavLink>
-            <NavLink className="ghost-button" to="/profil-zakaznika">
-              Profil zákazníka
+            <NavLink className="ghost-button" to="/kalendar">
+              Nejbližší termíny
             </NavLink>
           </div>
         </header>
@@ -116,9 +113,9 @@ export function AppShell({ children }) {
               <div className="site-footer-column">
                 <h4 className="site-footer-label">Služby</h4>
                 <nav aria-label="Footer navigace">
-                  <NavLink to="/maliri">Najít malíře</NavLink>
+                  <NavLink to="/kalkulacka">Spočítat cenu</NavLink>
                   <NavLink to="/kalendar">Volné termíny</NavLink>
-                  <NavLink to="/objednat">Orientační ceny</NavLink>
+                  <NavLink to="/objednat">Dokončit objednávku</NavLink>
                 </nav>
               </div>
 
@@ -137,8 +134,8 @@ export function AppShell({ children }) {
                 <nav aria-label="Footer kontakt">
                   <span className="footer-text-row">{companyProfile.address}</span>
                   <span className="footer-text-row">IČO: {companyProfile.ico}</span>
-                  <NavLink to="/kalkulacka">Online kalkulačka</NavLink>
-                  <NavLink to="/profil-zakaznika">Profil zákazníka</NavLink>
+                  <NavLink to="/kalkulacka">Rychlá kalkulačka</NavLink>
+                  <NavLink to="/kalendar">Dostupné termíny</NavLink>
                 </nav>
               </div>
             </div>
