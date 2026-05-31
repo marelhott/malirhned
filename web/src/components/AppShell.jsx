@@ -81,16 +81,14 @@ export function AppShell({ children }) {
 
           <nav className="nav-links" aria-label="Hlavní navigace">
             <NavLink to="/">Úvod</NavLink>
-            <NavLink to="/kalkulacka">Cena</NavLink>
-            <NavLink to="/kalendar">Kalendář</NavLink>
+            <a href="/#cena">Cena</a>
+            <a href="/#terminy">Termíny</a>
             <NavLink to="/objednat">Objednávka</NavLink>
             <NavLink to="/o-nas">O nás</NavLink>
           </nav>
 
           <div className="topbar-actions">
-            <NavLink className="ghost-button" to="/kalendar">
-              Nejbližší termíny
-            </NavLink>
+            <a className="ghost-button" href="/#cena">Spočítat cenu</a>
           </div>
         </header>
 

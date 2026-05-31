@@ -6468,3 +6468,534 @@
     padding: 18px;
   }
 }
+
+.onepage-main {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 64px 24px 0;
+}
+
+.onepage-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) 430px;
+  gap: 28px;
+  align-items: start;
+}
+
+.onepage-hero-copy {
+  padding: 18px 0 0;
+}
+
+.onepage-eyebrow {
+  margin-bottom: 24px;
+}
+
+.onepage-hero-copy h1 {
+  max-width: 10ch;
+  margin-bottom: 16px;
+}
+
+.onepage-hero-copy p {
+  max-width: 34ch;
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+
+.onepage-flow-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.04);
+  color: var(--text-soft);
+  font-size: 0.95rem;
+}
+
+.onepage-flow-strip i {
+  width: 16px;
+  height: 1px;
+  background: rgba(20, 24, 28, 0.14);
+}
+
+.onepage-hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.onepage-mini-card,
+.onepage-calc-card,
+.onepage-price-card,
+.onepage-calendar-card,
+.onepage-day-panel,
+.onepage-painter-card {
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: var(--panel-shadow);
+}
+
+.onepage-mini-card {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.onepage-mini-grid,
+.onepage-calc-grid,
+.onepage-advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.onepage-mini-grid label,
+.onepage-calc-grid label,
+.onepage-advanced-grid label {
+  display: grid;
+  gap: 8px;
+}
+
+.onepage-mini-grid span,
+.onepage-calc-grid span,
+.onepage-advanced-grid span,
+.onepage-day-top span,
+.onepage-slot-card span,
+.onepage-painter-meta span {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.onepage-mini-grid input,
+.onepage-mini-grid select,
+.onepage-calc-grid input,
+.onepage-calc-grid select,
+.onepage-advanced-grid select {
+  min-height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: var(--text-strong);
+  padding: 0 14px;
+}
+
+.onepage-mini-grid input:focus,
+.onepage-mini-grid select:focus,
+.onepage-calc-grid input:focus,
+.onepage-calc-grid select:focus,
+.onepage-advanced-grid select:focus {
+  outline: none;
+  border-color: rgba(32, 133, 59, 0.32);
+  box-shadow: 0 0 0 4px rgba(32, 133, 59, 0.08);
+}
+
+.onepage-mini-submit {
+  width: 100%;
+}
+
+.onepage-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 56px;
+}
+
+.onepage-step-card {
+  padding: 18px 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.04);
+}
+
+.onepage-step-card span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+
+.onepage-step-card h2 {
+  font-size: 1.08rem;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.onepage-step-card p {
+  margin-top: 8px;
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+.onepage-workspace {
+  margin-top: 56px;
+}
+
+.onepage-workspace--compact {
+  margin-bottom: 32px;
+}
+
+.onepage-section-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.onepage-section-head span {
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.onepage-section-head h2 {
+  max-width: 16ch;
+}
+
+.onepage-calc-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 20px;
+  align-items: start;
+}
+
+.onepage-calc-card {
+  padding: 20px;
+}
+
+.onepage-advanced {
+  margin-top: 16px;
+  border-top: 1px solid rgba(20, 24, 28, 0.08);
+  padding-top: 16px;
+}
+
+.onepage-advanced summary {
+  cursor: pointer;
+  color: var(--text-strong);
+  font-weight: 400;
+  margin-bottom: 14px;
+}
+
+.onepage-price-card {
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(240, 247, 242, 0.8) 0%, #fff 100%);
+}
+
+.onepage-price-card span {
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.onepage-price-card strong,
+.onepage-day-top strong,
+.onepage-painter-main strong,
+.onepage-painter-meta strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--text-strong);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+
+.onepage-price-card p {
+  margin: 10px 0 16px;
+  line-height: 1.7;
+}
+
+.onepage-price-card .primary-button {
+  width: 100%;
+}
+
+.onepage-recommend-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.onepage-recommend-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: #fff;
+  padding: 16px;
+  text-align: left;
+  box-shadow: 0 1px 2px rgba(15, 18, 22, 0.04);
+}
+
+.onepage-recommend-card.is-active {
+  border-color: rgba(32, 133, 59, 0.25);
+  background: var(--accent-soft);
+}
+
+.onepage-recommend-card span {
+  color: var(--accent);
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.onepage-recommend-card strong {
+  display: block;
+  margin-top: 10px;
+  color: var(--text-strong);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.onepage-recommend-card small,
+.onepage-recommend-card em {
+  display: block;
+  margin-top: 6px;
+  font-style: normal;
+}
+
+.onepage-recommend-card em {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+
+.onepage-calendar-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 20px;
+  align-items: start;
+}
+
+.onepage-calendar-card {
+  padding: 20px;
+}
+
+.onepage-calendar-head {
+  margin-bottom: 16px;
+}
+
+.onepage-calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.onepage-calendar-legend div {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.onepage-calendar-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.onepage-calendar-legend .is-free,
+.onepage-day-chip.is-free {
+  background: rgba(32, 133, 59, 0.12);
+}
+
+.onepage-calendar-legend .is-limited,
+.onepage-day-chip.is-limited {
+  background: rgba(56, 166, 220, 0.14);
+}
+
+.onepage-calendar-legend .is-last,
+.onepage-day-chip.is-last {
+  background: rgba(255, 184, 0, 0.18);
+}
+
+.onepage-calendar-legend .is-full,
+.onepage-day-chip.is-full {
+  background: rgba(20, 24, 28, 0.08);
+}
+
+.onepage-calendar-legend .is-off,
+.onepage-day-chip.is-off {
+  background: rgba(20, 24, 28, 0.04);
+}
+
+.onepage-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.onepage-day-chip {
+  min-height: 86px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 12px;
+  background: #fff;
+  display: grid;
+  align-content: space-between;
+  text-align: left;
+}
+
+.onepage-day-chip.is-selected {
+  border-color: rgba(32, 133, 59, 0.3);
+  box-shadow: 0 0 0 4px rgba(32, 133, 59, 0.08);
+}
+
+.onepage-day-chip strong {
+  color: var(--text-strong);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.onepage-day-chip span {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.onepage-day-panel {
+  padding: 20px;
+}
+
+.onepage-day-top p {
+  margin-top: 8px;
+}
+
+.onepage-slot-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.onepage-slot-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.onepage-slot-card.is-selected {
+  border-color: rgba(32, 133, 59, 0.25);
+  background: var(--accent-soft);
+}
+
+.onepage-slot-main,
+.onepage-slot-side,
+.onepage-painter-main,
+.onepage-painter-meta,
+.onepage-painter-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.onepage-slot-main,
+.onepage-slot-side div,
+.onepage-painter-main div,
+.onepage-painter-meta div {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.onepage-slot-main strong,
+.onepage-slot-side b {
+  color: var(--text-strong);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.onepage-slot-side small,
+.onepage-painter-main small {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.onepage-painter-card {
+  padding: 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.onepage-painter-card img {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+.onepage-painter-main p {
+  margin-top: 6px;
+}
+
+.onepage-painter-meta {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.onepage-painter-meta div {
+  min-width: 220px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-muted);
+}
+
+.onepage-painter-meta strong {
+  font-size: 1.05rem;
+  margin-top: 6px;
+}
+
+.onepage-painter-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1180px) {
+  .onepage-hero,
+  .onepage-calc-layout,
+  .onepage-calendar-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .onepage-recommend-row,
+  .onepage-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .onepage-main {
+    padding: 40px 16px 0;
+  }
+
+  .onepage-mini-grid,
+  .onepage-calc-grid,
+  .onepage-advanced-grid,
+  .onepage-recommend-row,
+  .onepage-steps,
+  .onepage-calendar-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .onepage-slot-card,
+  .onepage-slot-main,
+  .onepage-slot-side,
+  .onepage-painter-main,
+  .onepage-painter-meta,
+  .onepage-painter-actions,
+  .onepage-hero-actions,
+  .onepage-flow-strip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
